@@ -2,12 +2,12 @@
   (add1
     (list:min
       (filter ($ (not (eq? % -1)))
-        (map (lambda (x) (index-of str x))
+        (map ($ (index-of str %))
           [#\[ #\] #\{ #\} #\) #\( #\' #\space #\newline #\tab])))))
 
 (define zhighlight (lambda (str)
   (let ((col (lambda (x) (color x #{:to-str #t})))
-        (orange (delay (escape-sequence "38;5;208" #t (nil)))))
+        (orange (escape-sequence "38;5;208" #t (nil))))
     (let loop ((str str) (acc ""))
       (if (null? str)
         acc
@@ -30,13 +30,14 @@
           ((#\#)
             (case (cadr str)
               ((#\{) (loop (cddr str) (++ acc (col :magenta) "#{" (col :reset))))
+              ((#\() (loop (cddr str) (++ acc (col :magenta) "#{" (col :reset))))
               ((#\t #\f) =>
-                (lambda (char) (loop (cddr str) (++ acc (orange) "#" (string char) (col :reset)))))
+                (lambda (char) (loop (cddr str) (++ acc orange "#" (string char) (col :reset)))))
               ((#\\)
                 (let* ((i (max 3 (first-separator (cdr str))))
                        (hd (substring str 0 (if (> i 0) i (length str))))
                        (tl (substring str (if (> i 0) i (length str)) (length str))))
-                  (loop tl (++ acc (orange) hd (col :reset)))))
+                  (loop tl (++ acc orange hd (col :reset)))))
               (else => (lambda (char) (write char)))))
           ((#\;)
               (let* ((i (add1 (index-of (cdr str) #\newline)))
@@ -54,16 +55,16 @@
               (let* ((i (add1 (index-of (cdr str) #\")))
                      (hd (substring str 0 (add1 (if (> i 0) i (length str)))))
                      (tl (substring (cdr str) (if (> i 0) i (length str)) (length str))))
-                (loop tl (++ acc (orange) hd (col :reset)))))
+                (loop tl (++ acc orange hd (col :reset)))))
           (else => 
             (lambda (char)
               (if (char:num? char)
                 (let* ((i (first-separator (cdr str)))
                        (hd (substring str 0 (if (> i 0) i (length str))))
                        (tl (substring str (if (> i 0) i (length str)) (length str))))
-                  (loop tl (++ acc (orange) hd (col :reset))))
+                  (loop tl (++ acc orange hd (col :reset))))
                 (loop (cdr str) (++ acc char)))))))))))
 
-(if (not (= (length zepto:args) 1))
-  (write "usage: zhighlight <file>")
-  (zhighlight (read-contents (car zepto:args))))
+(if (= (length zepto:args) 1)
+  (zhighlight (read-contents (car zepto:args)))
+  (write "usage: zhighlight <file>"))
