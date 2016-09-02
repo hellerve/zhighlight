@@ -1,4 +1,10 @@
 (define (first-separator str)
+  "find the first separator in <par>str</par>
+
+   params:
+    - str: the string to search
+   complexity: O(n*k) where k is the number of valid separators (currently 10)
+   returns: the index of the first separator"
   (add1
     (list:min
       (filter ($ (not (eq? % -1)))
@@ -6,6 +12,13 @@
           [#\[ #\] #\{ #\} #\) #\( #\' #\space #\newline #\tab])))))
 
 (define zhighlight (lambda (str)
+  "given <par>str</par>, returns the string highlighted using ANSI color
+   escape codes.
+
+   params:
+    - str: the string to highlight
+   complexity: O(n)
+   returns: the highlighted string"
   (let ((col (lambda (x) (color x #{:to-str #t})))
         (orange (escape-sequence "38;5;208" #t (nil))))
     (let loop ((str str) (acc ""))
